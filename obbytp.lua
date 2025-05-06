@@ -66,7 +66,7 @@ task.spawn(function()
 		end
 
 		local checkpoint = checkpointsFolder:FindFirstChild(tostring(i))
-		if checkpoint and checkpoint:IsA("SpawnLocation") then
+		if checkpoint and checkpoint:IsA("PrimaryPart") then
 			local targetCFrame = checkpoint.CFrame + yOffset
 			rootPart.CFrame = targetCFrame
 			task.wait(0.25)
