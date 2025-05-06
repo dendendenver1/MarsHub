@@ -40,7 +40,7 @@ if humanoid.Health <= 0 then
 end
 
 
-local stage = 161
+local stage = 0
 pcall(function()
 	local stats = player:WaitForChild("leaderstats", 5)
 	if stats then
