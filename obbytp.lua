@@ -10,7 +10,7 @@ local rootPart = character:WaitForChild("HumanoidRootPart")
 
 -- Config
 local checkpointsFolder = workspace:WaitForChild("Checkpoints")
-local maxCheckpoints = 241
+local maxCheckpoints = 100
 local yOffset = Vector3.new(0, 0, 0)
 
 
