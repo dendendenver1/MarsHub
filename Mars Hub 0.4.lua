@@ -5,6 +5,10 @@ local allowedGames = {
     1122334455,
 }
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+
 local DiscordLib = loadstring(game:HttpGet"https://raw.githubusercontent.com/dawid-scripts/UI-Libs/main/discord%20lib.txt")()
 local win = DiscordLib:Window("Mars Hub")
 local serv = win:Server("Universal", "78050293459991")
@@ -48,7 +52,84 @@ universalChannel:Button("Remove Skybox", function()
         end
     end
 end)
+universalChannel:Button("Touch Interests", function()
+    if not firetouchinterest then
+        DiscordLib:Notification("Error", "Your exploit doesn't support firetouchinterest", "Okay")
+        return
+    end
 
+    local speaker = game.Players.LocalPlayer
+    local root = speaker.Character and (speaker.Character:FindFirstChild("HumanoidRootPart") or speaker.Character:FindFirstChildWhichIsA("BasePart"))
+    if not root then
+        DiscordLib:Notification("Error", "Could not find root part", "Okay")
+        return
+    end
+
+    local function touch(x)
+        x = x:FindFirstAncestorWhichIsA("Part")
+        if x then
+            task.spawn(function()
+                firetouchinterest(x, root, 1)
+                wait()
+                firetouchinterest(x, root, 0)
+            end)
+            x.CFrame = root.CFrame
+        end
+    end
+
+    local count = 0
+    for _, descendant in ipairs(workspace:GetDescendants()) do
+        if descendant:IsA("TouchTransmitter") then
+            touch(descendant)
+            count += 1
+        end
+    end
+
+    DiscordLib:Notification("Touch Interests", "Touched "..count.." objects!", "Cool")
+end)
+universalChannel:Button("Fire ClickDetectors", function()
+    if not fireclickdetector then
+        DiscordLib:Notification("Error", "Your exploit doesn't support fireclickdetector", "Okay")
+        return
+    end
+
+    local count = 0
+    for _, descendant in ipairs(workspace:GetDescendants()) do
+        if descendant:IsA("ClickDetector") then
+            fireclickdetector(descendant)
+            count += 1
+        end
+    end
+
+    DiscordLib:Notification("Click Detectors", "Fired "..count.." click detectors!", "Nice")
+end)
+local spammingClickDetectors = false
+
+universalChannel:Toggle("Spam ClickDetectors", false, function(state)
+    spammingClickDetectors = state
+
+    if not fireclickdetector then
+        DiscordLib:Notification("Error", "Your exploit doesn't support fireclickdetector", "Okay")
+        spammingClickDetectors = false
+        return
+    end
+
+    if spammingClickDetectors then
+        DiscordLib:Notification("ClickDetector Spam", "Started spamming all click detectors!", "Stop")
+        task.spawn(function()
+            while spammingClickDetectors do
+                for _, descendant in ipairs(workspace:GetDescendants()) do
+                    if descendant:IsA("ClickDetector") then
+                        fireclickdetector(descendant)
+                    end
+                end
+                task.wait(0) -- Adjust spam speed here
+            end
+        end)
+    else
+        DiscordLib:Notification("ClickDetector Spam", "Stopped spamming click detectors.", "Okay")
+    end
+end)
 universalChannel:Slider("Time of Day", 0, 24, 12, function(value)
     game:GetService("Lighting").ClockTime = value
 end)
@@ -109,6 +190,8 @@ universalChannel:Button("Rejoin Server", function()
     TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
 end)
 
+
+
 local Scriptchannel = serv:Channel("GUIS/Scripts")
 Scriptchannel:Button("Animation Hub", function()
     pcall(function()
@@ -120,6 +203,30 @@ Scriptchannel:Button("Infinite Yield", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
     end)
 end)
+
+
+local players = serv:Channel("Players")
+
+local playerButtons = {}
+
+local function refreshPlayerList()
+    -- Clear old buttons
+    for _, btn in ipairs(playerButtons) do
+        btn:Destroy()
+    end
+    table.clear(playerButtons)
+
+    -- Add new buttons for each player
+    for _, player in ipairs(game.Players:GetPlayers()) do
+        local btn = players:Button(player.Name, function()
+            DiscordLib:Notification("Player Clicked", player.Name .. " selected", "OK")
+        end)
+        table.insert(playerButtons, btn)
+    end
+end
+
+-- Refresh initially
+refreshPlayerList()
 
 
 
