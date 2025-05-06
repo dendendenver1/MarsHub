@@ -228,5 +228,9 @@ end
 -- Refresh initially
 refreshPlayerList()
 
-
-
+local gamespec = serv:Channel("Game Specific")
+gamespec:Button("Obby Auto Completer", function()
+    pcall(function()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/dendendenver1/MarsHub/refs/heads/main/obbytp.lua'))()
+    end)
+end)
