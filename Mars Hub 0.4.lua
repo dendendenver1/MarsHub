@@ -333,9 +333,98 @@ loadstring(game:HttpGet('https://raw.githubusercontent.com/dendendenver1/MarsHub
 end)
 
 local serv = win:Server("My Shit", "132917940014468")
-local lbls = serv:Channel("Text")
+local lbls = serv:Channel("Status")
 
 lbls:Label("This channel is only going to be for the scripts i've made.")
 lbls:Label("Any questions will be @surrealsoundsiswild on discord")
 
+local tgls = serv:Channel("Scripts")
+local isRolling = false
+local toggleConnection, jumpConnection
+local originalCameraSubject
 
+tgls:Toggle("Rolling Ball Mode", false, function(state)
+    isRolling = state
+
+    if state then
+        local UserInputService = game:GetService("UserInputService")
+        local RunService = game:GetService("RunService")
+        local Camera = workspace.CurrentCamera
+        local HttpService = game:GetService("HttpService")
+
+        local SPEED_MULTIPLIER = 30
+        local JUMP_POWER = 60
+        local JUMP_GAP = 0.3
+
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local humanoid = character:WaitForChild("Humanoid")
+        local ball = character:WaitForChild("HumanoidRootPart")
+
+        for _, v in ipairs(character:GetDescendants()) do
+            if v:IsA("BasePart") then
+                v.CanCollide = false
+            end
+        end
+
+        ball.Shape = Enum.PartType.Ball
+        ball.Size = Vector3.new(5, 5, 5)
+
+        local params = RaycastParams.new()
+        params.FilterType = Enum.RaycastFilterType.Blacklist
+        params.FilterDescendantsInstances = {character}
+
+        toggleConnection = RunService.RenderStepped:Connect(function(delta)
+            ball.CanCollide = true
+            humanoid.PlatformStand = true
+
+            if UserInputService:GetFocusedTextBox() then return end
+
+            if UserInputService:IsKeyDown("W") then
+                ball.RotVelocity -= Camera.CFrame.RightVector * delta * SPEED_MULTIPLIER
+            end
+            if UserInputService:IsKeyDown("A") then
+                ball.RotVelocity -= Camera.CFrame.LookVector * delta * SPEED_MULTIPLIER
+            end
+            if UserInputService:IsKeyDown("S") then
+                ball.RotVelocity += Camera.CFrame.RightVector * delta * SPEED_MULTIPLIER
+            end
+            if UserInputService:IsKeyDown("D") then
+                ball.RotVelocity += Camera.CFrame.LookVector * delta * SPEED_MULTIPLIER
+            end
+        end)
+
+        jumpConnection = UserInputService.JumpRequest:Connect(function()
+            local result = workspace:Raycast(
+                ball.Position,
+                Vector3.new(0, -((ball.Size.Y / 2) + JUMP_GAP), 0),
+                params
+            )
+            if result then
+                ball.Velocity += Vector3.new(0, JUMP_POWER, 0)
+            end
+        end)
+
+        originalCameraSubject = Camera.CameraSubject
+        Camera.CameraSubject = ball
+
+        humanoid.Died:Connect(function()
+            if toggleConnection then toggleConnection:Disconnect() end
+            if jumpConnection then jumpConnection:Disconnect() end
+        end)
+
+    else
+        if toggleConnection then toggleConnection:Disconnect() end
+        if jumpConnection then jumpConnection:Disconnect() end
+
+        local character = game.Players.LocalPlayer.Character
+        if character then
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.PlatformStand = false
+            end
+        end
+
+        workspace.CurrentCamera.CameraSubject = originalCameraSubject or game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
+    end
+end)
