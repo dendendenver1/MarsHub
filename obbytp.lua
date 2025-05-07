@@ -1,16 +1,14 @@
-
 local Players = game:GetService("Players")
 local StarterGui = game:GetService("StarterGui")
-
 
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local rootPart = character:WaitForChild("HumanoidRootPart")
 
--- Config
+
 local checkpointsFolder = workspace:WaitForChild("Checkpoints")
-local maxCheckpoints = 100
+local maxCheckpoints = 2000
 local yOffset = Vector3.new(0, 0, 0)
 
 
@@ -34,10 +32,25 @@ local function setCollision(state)
 end
 
 
+local function removeKillBricks(parent)
+	local removedCount = 0
+	for _, obj in ipairs(parent:GetDescendants()) do
+		if obj:IsA("BasePart") then
+			local nameLower = string.lower(obj.Name)
+			if nameLower:find("kill") or nameLower:find("death") then
+				obj:Destroy()
+				removedCount += 1
+			end
+		end
+	end
+	print("Removed " .. removedCount .. " kill bricks from workspace.")
+end
+
+
 if humanoid.Health <= 0 then
 	notify("Error", "You are dead. Please respawn first.", 5)
 	return
-end
+	end
 
 
 local stage = 0
@@ -73,8 +86,11 @@ task.spawn(function()
 		end
 	end
 
-	-- Re-enable after teleport
+
 	humanoid.PlatformStand = false
 	setCollision(true)
 	notify("Done", "You've completed the checkpoint chain!", 5)
+
+
+	removeKillBricks(workspace)
 end)
